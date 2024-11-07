@@ -9,22 +9,27 @@ def render_index_page():
 
 @app.route("/emotionDetector")
 def sent_to_emotion_detector():
+
     try:
         textToAnalyze = request.args.get("textToAnalyze")
 
         response = emotion_detector(textToAnalyze)
-        
+
         if 'error' in response:
             return jsonify('No text provided for analysis.')
 
         formatted = response.get('formatted')
+
         dom_emotion = formatted.get("dominant_emotion")
 
+        if dom_emotion is None:
+            raise ValueError("No dominant emotion found in response.")
+        
         formatted_scores = ', '.join([f"'{emotion}': {score}" for emotion, score in formatted.items()])
-        return f"<p>For the given statement, the system response is {formatted_scores}. The dominant emotion is {dom_emotion}.</p>"
+        return f"For the given statement, the system response is {formatted_scores}. The dominant emotion is {dom_emotion}."
 
-    except Exception as e:
-        return f"<p style='color: red;'>An unexpected error occurred: {str(e)}</p>", 500
+    except (TypeError, RuntimeError) as e:
+        return f"An unexpected error occurred: {str(e)}", 500
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True)
