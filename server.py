@@ -13,23 +13,19 @@ def sent_to_emotion_detector():
     try:
         textToAnalyze = request.args.get("textToAnalyze")
 
-        response = emotion_detector(textToAnalyze)
-
-        if 'error' in response:
-            return jsonify('No text provided for analysis.')
-
+        response, status_code = emotion_detector(textToAnalyze)
+ 
         formatted = response.get('formatted')
+        if formatted is None or formatted.get("dominant_emotion") == "None":
+            return jsonify("Invalid text! Please try again.")
 
         dom_emotion = formatted.get("dominant_emotion")
 
-        if dom_emotion is None:
-            raise ValueError("No dominant emotion found in response.")
-        
         formatted_scores = ', '.join([f"'{emotion}': {score}" for emotion, score in formatted.items()])
         return f"For the given statement, the system response is {formatted_scores}. The dominant emotion is {dom_emotion}."
 
     except (TypeError, RuntimeError) as e:
-        return f"An unexpected error occurred: {str(e)}", 500
+        return jsonify("An unexpected error occurred")
 
 if __name__ == "__main__":
     app.run(debug=True)

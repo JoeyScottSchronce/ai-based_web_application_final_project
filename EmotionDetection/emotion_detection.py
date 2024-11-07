@@ -5,7 +5,11 @@ def emotion_detector(textToAnalyze):
     '''This function uses the IBM Watson NLP API to perform emotion detection on the input text.'''
 
     if not textToAnalyze:
-        return {'error', 400}
+        return {
+            "anger": None, "disgust": None, 
+            "fear": None, "joy": None, 
+            "sadness": None, "dominant_emotion": None
+            }, 400
 
     URL = 'https://sn-watson-emotion.labs.skills.network/v1/watson.runtime.nlp.v1/NlpService/EmotionPredict'
     headers = {"grpc-metadata-mm-model-id": "emotion_aggregated-workflow_lang_en_stock"}
@@ -15,15 +19,10 @@ def emotion_detector(textToAnalyze):
 
     formatted = formatted_response['emotionPredictions'][0]['emotion']
 
-    if not formatted:
-        return {'error': 'No emotions detected in response.'}
-
-
     max_key = max(formatted, key = formatted.get)
     formatted["dominant_emotion"] = max_key
 
-    return {'formatted': formatted}
-
+    return {'formatted': formatted}, 200
 
 if __name__ == "__main__":
     app.run(debug=True)
